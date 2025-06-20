@@ -1,0 +1,360 @@
+{
+  "schema_version": "1.0.0",
+  "component_definitions": {
+    "input": {
+      "id": "input",
+      "type": "input",
+      "category": "source",
+      "title": "Input Node",
+      "description": "Entry point that accepts user input",
+      "icon": "play-circle",
+      "color": "#10B981",
+      "ports": {
+        "inputs": [],
+        "outputs": [
+          {
+            "id": "output",
+            "name": "User Input",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      "properties": {
+        "placeholder": {
+          "type": "string",
+          "default": "Enter your message...",
+          "label": "Placeholder Text"
+        },
+        "validation": {
+          "type": "object",
+          "properties": {
+            "required": {"type": "boolean", "default": true},
+            "minLength": {"type": "number", "default": 1},
+            "maxLength": {"type": "number", "default": 1000}
+          }
+        }
+      },
+      "position": {"x": 100, "y": 100},
+      "runtime": {
+        "function": "input_node",
+        "type": "RunnableLambda"
+      }
+    },
+    "agent": {
+      "id": "agent",
+      "type": "processor",
+      "category": "ai",
+      "title": "AI Agent",
+      "description": "Processes input using LLM and generates response",
+      "icon": "brain",
+      "color": "#8B5CF6",
+      "ports": {
+        "inputs": [
+          {
+            "id": "input",
+            "name": "User Input",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "outputs": [
+          {
+            "id": "output",
+            "name": "AI Response",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      "properties": {
+        "model": {
+          "type": "select",
+          "options": ["gemini-2.0-flash", "gpt-4", "claude-3"],
+          "default": "gemini-2.0-flash",
+          "label": "LLM Model"
+        },
+        "temperature": {
+          "type": "number",
+          "min": 0,
+          "max": 2,
+          "step": 0.1,
+          "default": 0.7,
+          "label": "Temperature"
+        },
+        "max_tokens": {
+          "type": "number",
+          "min": 1,
+          "max": 4000,
+          "default": 1000,
+          "label": "Max Tokens"
+        },
+        "system_prompt": {
+          "type": "textarea",
+          "default": "You are a helpful assistant.",
+          "label": "System Prompt"
+        }
+      },
+      "position": {"x": 400, "y": 100},
+      "runtime": {
+        "function": "agent_node",
+        "type": "RunnableLambda"
+      }
+    },
+    "output": {
+      "id": "output",
+      "type": "output",
+      "category": "sink",
+      "title": "Output Node",
+      "description": "Final output that displays the result",
+      "icon": "check-circle",
+      "color": "#F59E0B",
+      "ports": {
+        "inputs": [
+          {
+            "id": "input",
+            "name": "Final Result",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "outputs": []
+      },
+      "properties": {
+        "format": {
+          "type": "select",
+          "options": ["text", "json", "markdown"],
+          "default": "text",
+          "label": "Output Format"
+        },
+        "display_metadata": {
+          "type": "boolean",
+          "default": false,
+          "label": "Show Metadata"
+        }
+      },
+      "position": {"x": 700, "y": 100},
+      "runtime": {
+        "function": "output_node",
+        "type": "RunnableLambda"
+      }
+    },
+    "conditional": {
+      "id": "conditional",
+      "type": "conditional",
+      "category": "logic",
+      "title": "Conditional Node",
+      "description": "Routes flow based on conditions",
+      "icon": "git-branch",
+      "color": "#EF4444",
+      "ports": {
+        "inputs": [
+          {
+            "id": "input",
+            "name": "Input Data",
+            "type": "any",
+            "required": true
+          }
+        ],
+        "outputs": [
+          {
+            "id": "true",
+            "name": "True Path",
+            "type": "any",
+            "required": false
+          },
+          {
+            "id": "false",
+            "name": "False Path",
+            "type": "any",
+            "required": false
+          }
+        ]
+      },
+      "properties": {
+        "condition": {
+          "type": "code",
+          "language": "python",
+          "default": "return len(state.get('user_input', '')) > 0",
+          "label": "Condition Logic"
+        }
+      },
+      "position": {"x": 400, "y": 250},
+      "runtime": {
+        "function": "conditional_node",
+        "type": "RunnableLambda"
+      }
+    },
+    "transform": {
+      "id": "transform",
+      "type": "processor",
+      "category": "data",
+      "title": "Transform Node",
+      "description": "Transforms data using custom logic",
+      "icon": "shuffle",
+      "color": "#06B6D4",
+      "ports": {
+        "inputs": [
+          {
+            "id": "input",
+            "name": "Input Data",
+            "type": "any",
+            "required": true
+          }
+        ],
+        "outputs": [
+          {
+            "id": "output",
+            "name": "Transformed Data",
+            "type": "any",
+            "required": true
+          }
+        ]
+      },
+      "properties": {
+        "transformation": {
+          "type": "code",
+          "language": "python",
+          "default": "return {'transformed': state}",
+          "label": "Transformation Logic"
+        }
+      },
+      "position": {"x": 400, "y": 400},
+      "runtime": {
+        "function": "transform_node",
+        "type": "RunnableLambda"
+      }
+    },
+    "string_uppercase": {
+      "id": "string_uppercase",
+      "type": "processor",
+      "category": "data",
+      "title": "String Uppercase",
+      "description": "Converts a string to uppercase.",
+      "icon": "arrow-up",
+      "color": "#2563EB",
+      "ports": {
+        "inputs": [
+          {
+            "id": "input",
+            "name": "Input String",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "outputs": [
+          {
+            "id": "output",
+            "name": "Uppercase String",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      "properties": {},
+      "position": {"x": 400, "y": 200},
+      "runtime": {
+        "function": "string_uppercase_node",
+        "type": "RunnableLambda"
+      }
+    },
+    "math_add": {
+      "id": "math_add",
+      "type": "processor",
+      "category": "data",
+      "title": "Math Add",
+      "description": "Adds two numbers.",
+      "icon": "plus",
+      "color": "#F59E0B",
+      "ports": {
+        "inputs": [
+          {
+            "id": "a",
+            "name": "A",
+            "type": "number",
+            "required": true
+          },
+          {
+            "id": "b",
+            "name": "B",
+            "type": "number",
+            "required": true
+          }
+        ],
+        "outputs": [
+          {
+            "id": "output",
+            "name": "Sum",
+            "type": "number",
+            "required": true
+          }
+        ]
+      },
+      "properties": {},
+      "position": {"x": 400, "y": 300},
+      "runtime": {
+        "function": "math_add_node",
+        "type": "RunnableLambda"
+      }
+    }
+  },
+  "categories": {
+    "source": {
+      "name": "Input Sources",
+      "color": "#10B981",
+      "description": "Nodes that provide input to the flow"
+    },
+    "ai": {
+      "name": "AI Processing",
+      "color": "#8B5CF6",
+      "description": "Nodes that use AI/LLM capabilities"
+    },
+    "logic": {
+      "name": "Logic & Control",
+      "color": "#EF4444",
+      "description": "Nodes that control flow execution"
+    },
+    "data": {
+      "name": "Data Processing",
+      "color": "#06B6D4",
+      "description": "Nodes that transform or manipulate data"
+    },
+    "sink": {
+      "name": "Output Sinks",
+      "color": "#F59E0B",
+      "description": "Nodes that output final results"
+    }
+  },
+  "data_types": {
+    "string": {
+      "name": "String",
+      "color": "#10B981",
+      "validation": "typeof value === 'string'"
+    },
+    "number": {
+      "name": "Number",
+      "color": "#F59E0B",
+      "validation": "typeof value === 'number'"
+    },
+    "boolean": {
+      "name": "Boolean",
+      "color": "#EF4444",
+      "validation": "typeof value === 'boolean'"
+    },
+    "object": {
+      "name": "Object",
+      "color": "#8B5CF6",
+      "validation": "typeof value === 'object'"
+    },
+    "array": {
+      "name": "Array",
+      "color": "#06B6D4",
+      "validation": "Array.isArray(value)"
+    },
+    "any": {
+      "name": "Any",
+      "color": "#6B7280",
+      "validation": "true"
+    }
+  }
+}

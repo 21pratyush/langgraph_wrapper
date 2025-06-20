@@ -1,0 +1,31 @@
+{
+  "nodes": {
+    "input": {
+      "type": "RunnableLambda",
+      "function": "input_node"
+    },
+    "agent": {
+      "type": "RunnableLambda",
+      "function": "agent_node"
+    },
+    "output": {
+      "type": "RunnableLambda",
+      "function": "output_node"
+    }
+  },
+  "edges": [
+    { "from": "input", "to": "agent" },
+    { "from": "agent", "to": "output" }
+  ],
+  "entry_point": "input",
+  "finish_point": "output",
+  "state_schema": {
+    "user_input": "str",
+    "response": "str | None"
+  },
+  "llm": {
+    "provider": "GoogleGenerativeAI",
+    "model": "gemini-2.0-flash",
+    "api_key": "env:GOOGLE_API_KEY"
+  }
+}

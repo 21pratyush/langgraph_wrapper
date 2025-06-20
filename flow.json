@@ -1,0 +1,145 @@
+{
+  "flow_id": "chatbot_flow_v1",
+  "name": "AI Chatbot Flow",
+  "description": "A simple chatbot flow using AI agent",
+  "version": "1.0.0",
+  "created_at": "2024-01-20T10:00:00Z",
+  "updated_at": "2024-01-20T10:00:00Z",
+  "metadata": {
+    "author": "Backend Team",
+    "tags": ["chatbot", "ai", "gemini"],
+    "complexity": "simple"
+  },
+  "nodes": [
+    {
+      "id": "input_1",
+      "type": "input",
+      "position": {"x": 100, "y": 200},
+      "data": {
+        "label": "User Input",
+        "properties": {
+          "placeholder": "Ask me anything...",
+          "validation": {
+            "required": true,
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "runtime": {
+        "function": "input_node",
+        "type": "RunnableLambda"
+      }
+    },
+    {
+      "id": "agent_1",
+      "type": "agent",
+      "position": {"x": 400, "y": 200},
+      "data": {
+        "label": "AI Assistant",
+        "properties": {
+          "model": "gemini-2.0-flash",
+          "temperature": 0.7,
+          "max_tokens": 1000,
+          "system_prompt": "You are a helpful AI assistant. Provide clear and concise responses."
+        }
+      },
+      "runtime": {
+        "function": "agent_node",
+        "type": "RunnableLambda"
+      }
+    },
+    {
+      "id": "output_1",
+      "type": "output",
+      "position": {"x": 700, "y": 200},
+      "data": {
+        "label": "Response Output",
+        "properties": {
+          "format": "text",
+          "display_metadata": false
+        }
+      },
+      "runtime": {
+        "function": "output_node",
+        "type": "RunnableLambda"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_1",
+      "source": "input_1",
+      "target": "agent_1",
+      "sourceHandle": "output",
+      "targetHandle": "input",
+      "type": "default",
+      "style": {
+        "stroke": "#10B981",
+        "strokeWidth": 2
+      }
+    },
+    {
+      "id": "edge_2",
+      "source": "agent_1",
+      "target": "output_1",
+      "sourceHandle": "output",
+      "targetHandle": "input",
+      "type": "default",
+      "style": {
+        "stroke": "#8B5CF6",
+        "strokeWidth": 2
+      }
+    }
+  ],
+  "entry_point": "input_1",
+  "finish_point": "output_1",
+  "state_schema": {
+    "user_input": {
+      "type": "string",
+      "description": "The input from the user",
+      "required": true
+    },
+    "response": {
+      "type": "string",
+      "description": "The AI generated response",
+      "required": false,
+      "default": null
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata about the flow execution",
+      "required": false,
+      "properties": {
+        "timestamp": {"type": "string"},
+        "execution_time": {"type": "number"},
+        "node_count": {"type": "number"}
+      }
+    }
+  },
+  "llm_config": {
+    "provider": "GoogleGenerativeAI",
+    "model": "gemini-2.0-flash",
+    "api_key": "env:GOOGLE_API_KEY",
+    "default_params": {
+      "temperature": 0.7,
+      "max_tokens": 1000
+    }
+  },
+  "environment": {
+    "variables": [
+      {
+        "key": "GOOGLE_API_KEY",
+        "type": "secret",
+        "required": true,
+        "description": "Google API key for Gemini access"
+      }
+    ]
+  },
+  "validation": {
+    "required_nodes": ["input", "output"],
+    "max_nodes": 50,
+    "max_edges": 100,
+    "allowed_cycles": false
+  }
+}
