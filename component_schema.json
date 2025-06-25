@@ -91,8 +91,9 @@
         },
         "system_prompt": {
           "type": "textarea",
-          "default": "You are a helpful assistant.",
-          "label": "System Prompt"
+          "default": "You are a greeting bot. Only respond to greetings. If the input is not a greeting, reply: 'I am only a greeting agent.'",
+          "label": "System Prompt",
+          "description": "Set this to specialize the agent. For greeting agent: 'You are a greeting bot. Only respond to greetings. If the input is not a greeting, reply: I am only a greeting agent.' For coding agent: 'You are a coding assistant. Only answer programming/code-related questions.' For conversation agent: 'You are a general conversation assistant. Do not answer greetings or code questions.'"
         }
       },
       "position": {"x": 400, "y": 100},
@@ -294,6 +295,72 @@
       "position": {"x": 400, "y": 300},
       "runtime": {
         "function": "math_add_node",
+        "type": "RunnableLambda"
+      }
+    },
+    "current_year": {
+      "id": "current_year",
+      "type": "processor",
+      "category": "data",
+      "title": "Current Year",
+      "description": "Returns the current year.",
+      "icon": "calendar",
+      "color": "#34D399",
+      "ports": {
+        "inputs": [],
+        "outputs": [
+          {
+            "id": "output",
+            "name": "Current Year",
+            "type": "number",
+            "required": true
+          }
+        ]
+      },
+      "properties": {},
+      "position": {"x": 400, "y": 500},
+      "runtime": {
+        "function": "current_year_node",
+        "type": "RunnableLambda"
+      }
+    },
+    "router": {
+      "id": "router",
+      "type": "logic",
+      "category": "logic",
+      "title": "Router Node",
+      "description": "Routes flow based on a label or boolean condition.",
+      "icon": "git-merge",
+      "color": "#F43F5E",
+      "ports": {
+        "inputs": [
+          {
+            "id": "input",
+            "name": "Input Data",
+            "type": "any",
+            "required": true
+          }
+        ],
+        "outputs": [
+          {
+            "id": "route_label",
+            "name": "Route Label",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      "properties": {
+        "routing_logic": {
+          "type": "code",
+          "language": "python",
+          "default": "user_input = state.get('user_input', '').strip().lower()\nif any(word in user_input for word in ['code', 'python', 'function', 'script', 'program']):\n    state['route_label'] = 'coding'\nelif any(greet in user_input for greet in ['hi', 'hello', 'hey', 'greetings']):\n    state['route_label'] = 'greeting'\nelse:\n    state['route_label'] = 'conversation'",
+          "label": "Routing Logic (Python)"
+        }
+      },
+      "position": {"x": 300, "y": 100},
+      "runtime": {
+        "function": "router_node",
         "type": "RunnableLambda"
       }
     }

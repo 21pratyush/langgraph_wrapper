@@ -4,7 +4,9 @@ from pydantic import BaseModel
 from typing import Dict, List, Any, Optional
 import json
 import os
-from graph_runtime import build_graph_from_json, get_llm
+from core.graph_runtime import build_graph_from_json
+from core.utils.helper import get_llm
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,6 +45,8 @@ class FlowEdge(BaseModel):
     targetHandle: Optional[str] = None
     type: str = "default"
     style: Dict[str, Any] = {}
+    condition: Optional[str] = None
+    path_map: Optional[Dict[str, str]] = None
 
 class FlowDefinition(BaseModel):
     flow_id: str
@@ -56,7 +60,6 @@ class FlowDefinition(BaseModel):
     llm_config: Dict[str, Any]
 
 class ExecutionRequest(BaseModel):
-    flow_id: str
     initial_state: Dict[str, Any]
 
 # In-memory storage (replace with database in production)
@@ -88,14 +91,7 @@ async def get_component_definitions():
     """Get all available component definitions for the frontend"""
     return component_definitions
 
-@app.get("/api/components/{component_name}")
-async def get_component_definition(component_type: str):
-    """Get specific component definition"""
-    if component_type not in component_definitions.get("component_definitions", {}):
-        raise HTTPException(status_code=404, detail="Component not found")
-    return component_definitions["component_definitions"][component_type]
-
-@app.get("/api/components/types/{component_type}")
+@app.get("/api/components/{component_type}")
 async def get_component_definition(component_type: str):
     """Get specific component definition"""
     if component_type not in component_definitions.get("component_definitions", {}):
@@ -169,6 +165,7 @@ async def execute_flow(flow_id: str, request: ExecutionRequest):
     # This is a placeholder for the actual execution
     try:
         result = await execute_langgraph_flow(flow_def, request.initial_state)
+        print(f"Execution result: {result}")
         return {
             "status": "success",
             "result": result,
@@ -241,6 +238,7 @@ async def execute_langgraph_flow(flow_def: Dict[str, Any], initial_state: Dict[s
     llm = get_llm(langgraph_format["llm"])
     workflow = build_graph_from_json(langgraph_format, llm=llm)
     app = workflow.compile()
+    print(f"Executing flow with initial state: {initial_state}")
     result = app.invoke(initial_state)
     return result
 
@@ -249,19 +247,23 @@ def convert_to_langgraph_format(flow_def: Dict[str, Any]) -> Dict[str, Any]:
     nodes = {}
     edges = []
     
-    # Convert nodes
+    # Convert nodes, include config/data for runtime
     for node in flow_def["nodes"]:
         nodes[node["id"]] = {
             "type": "RunnableLambda",
-            "function": f"{node['type']}_node"  # Map to function names
+            "function": f"{node['type']}_node",  # Map to function names
+            "config": node.get("data", {}).get("properties", {})
         }
     
     # Convert edges
     for edge in flow_def["edges"]:
-        edges.append({
-            "from": edge["source"],
-            "to": edge["target"]
-        })
+        edge_dict = edge.copy()
+        # Map 'source'/'target' to 'from'/'to' for compatibility, but keep all fields
+        if "source" in edge_dict:
+            edge_dict["from"] = edge_dict["source"]
+        if "target" in edge_dict:
+            edge_dict["to"] = edge_dict["target"]
+        edges.append(edge_dict)
     
     return {
         "nodes": nodes,

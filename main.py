@@ -1,7 +1,7 @@
 import json
 import streamlit as st
 from dotenv import load_dotenv
-from graph_runtime import build_graph_from_json, get_llm
+from core.graph_runtime import build_graph_from_json, get_llm
 
 # Load .env
 load_dotenv()
