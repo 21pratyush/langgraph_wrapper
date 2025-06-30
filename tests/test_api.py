@@ -299,146 +299,6 @@ def test_api():
     # else:
     #     print(f"❌ Error: {response.text}")
     
-    # Test: Multi-agent router flow
-#     print("\nMULTI-AGENT ROUTER FLOW TEST")
-#     router_flow = {
-#         "flow_id": "test_router_flow",
-#         "name": "Test Router Flow",
-#         "description": "Flow with router and three agents (greeting, coding, conversation)",
-#         "nodes": [
-#             {
-#                 "id": "input_1",
-#                 "type": "input",
-#                 "function": "input_node",
-#                 "position": {"x": 100, "y": 100},
-#                 "data": {"label": "User Input", "properties": {"placeholder": "Enter your message..."}}
-#             },
-#             {
-#                 "id": "router_1",
-#                 "type": "router",
-#                 "function": "router_node",
-#                 "position": {"x": 250, "y": 100},
-#                 "data": {
-#                     "label": "Router",
-#                     "properties": {
-#                         "routing_logic": """
-# # Set state['route_label'] to 'greeting', 'coding', or 'conversation'\nif 'code' in state.get('user_input', '').lower():\n    state['route_label'] = 'coding'\nelif any(greet in state.get('user_input', '').lower() for greet in ['hi', 'hello', 'hey']):\n    state['route_label'] = 'greeting'\nelse:\n    state['route_label'] = 'conversation'\nreturn state
-# """
-#                 }
-#             },
-#             {
-#                 "id": "greeting_agent",
-#                 "type": "agent",
-#                 "function": "agent_node",
-#                 "position": {"x": 400, "y": 50},
-#                 "data": {
-#                     "label": "Greeting Agent",
-#                     "properties": {
-#                         "model": "gemini-2.0-flash",
-#                         "system_prompt": "You are a well-trained, polite communicator. Always greet and respond to the user in a friendly and polite manner.",
-#                         "api_key": "env:GOOGLE_API_KEY"
-#                     }
-#                 }
-#             },
-#             {
-#                 "id": "coding_agent",
-#                 "type": "agent",
-#                 "function": "agent_node",
-#                 "position": {"x": 400, "y": 100},
-#                 "data": {
-#                     "label": "Coding Agent",
-#                     "properties": {
-#                         "model": "gemini-2.0-flash",
-#                         "system_prompt": "You are a Python expert. Only return Python code snippets relevant to the user's query. No explanations, just code.",
-#                         "api_key": "env:GOOGLE_API_KEY"
-#                     }
-#                 }
-#             },
-#             {
-#                 "id": "conversation_agent",
-#                 "type": "agent",
-#                 "function": "agent_node",
-#                 "position": {"x": 400, "y": 150},
-#                 "data": {
-#                     "label": "Conversation Agent",
-#                     "properties": {
-#                         "model": "gemini-2.0-flash",
-#                         "system_prompt": "You are a helpful assistant for general conversation.",
-#                         "api_key": "env:GOOGLE_API_KEY"
-#                     }
-#                 }
-#             },
-#             {
-#                 "id": "output_1",
-#                 "type": "output",
-#                 "function": "output_node",
-#                 "position": {"x": 600, "y": 100},
-#                 "data": {"label": "Output", "properties": {}}
-#             }
-#         ],
-#         "edges": [
-#             {"id": "e1", "source": "input_1", "target": "router_1"},
-#             {
-#                 "id": "e2",
-#                 "source": "router_1",
-#                 "target": "greeting_agent",  # <-- Add a valid target for Pydantic
-#                 "type": "conditional",
-#                 "condition": "lambda state: state['route_label']",
-#                 "path_map": {
-#                     "greeting": "greeting_agent",
-#                     "coding": "coding_agent",
-#                     "conversation": "conversation_agent"
-#                 }
-#             },
-#             {"id": "e3", "source": "greeting_agent", "target": "output_1"},
-#             {"id": "e4", "source": "coding_agent", "target": "output_1"},
-#             {"id": "e5", "source": "conversation_agent", "target": "output_1"}
-#         ],
-#         "entry_point": "input_1",
-#         "finish_point": "output_1",
-#         "state_schema": {
-#             "user_input": {"type": "string", "required": True},
-#             "route_label": {"type": "string", "required": False},
-#             "response": {"type": "string", "required": False}
-#         },
-#         "llm_config": {
-#             "provider": "GoogleGenerativeAI",
-#             "model": "gemini-2.0-flash",
-#             "api_key": "env:GOOGLE_API_KEY"
-#         }
-#     }
-#     # Create the flow
-#     response = requests.post(f"{BASE_URL}/api/flows", json=router_flow)
-#     print(f"Router flow create status: {response.status_code}")
-#     if response.status_code == 200:
-#         print("✅ Router flow created successfully!")
-#     else:
-#         print(f"❌ Error: {response.text}")
-#     # Test greeting
-#     payload = {"initial_state": {"user_input": "Hello!"}}
-#     response = requests.post(f"{BASE_URL}/api/flows/test_router_flow/execute", json=payload)
-#     print(f"Greeting test status: {response.status_code}")
-#     if response.status_code == 200:
-#         print(f"Greeting agent response: {response.json().get('result', {})}")
-#     else:
-#         print(f"❌ Error: {response.text}")
-#     # Test coding
-#     payload = {"initial_state": {"user_input": "Write code to sum a list in python."}}
-#     response = requests.post(f"{BASE_URL}/api/flows/test_router_flow/execute", json=payload)
-#     print(f"Coding test status: {response.status_code}")
-#     if response.status_code == 200:
-#         print(f"Coding agent response: {response.json().get('result', {})}")
-#     else:
-#         print(f"❌ Error: {response.text}")
-#     # Test conversation
-#     payload = {"initial_state": {"user_input": "What's the weather today?"}}
-#     response = requests.post(f"{BASE_URL}/api/flows/test_router_flow/execute", json=payload)
-#     print(f"Conversation test status: {response.status_code}")
-#     if response.status_code == 200:
-#         print(f"Conversation agent response: {response.json().get('result', {})}")
-#     else:
-#         print(f"❌ Error: {response.text}")
-
     # print("\n=== Test: Simple If-Else Router Flow ===")
     # # Define the flow with router, greeting agent, coding agent, and output
     # simple_router_flow = {
@@ -561,67 +421,166 @@ def test_api():
     # print(f"Unrelated query response: {resp.json()}")
     # assert resp.status_code == 200
 
-    print("\n=== Test: Agent with Current Year Tool ===")
-    current_year_flow = {
-        "flow_id": "test_current_year_agent_flow",
-        "name": "Agent with Current Year Tool Flow",
-        "description": "An agent that uses a tool to find the current year.",
-        "nodes": [
-            {"id": "input_1", "type": "input", "function": "input_node", "position": {"x": 100, "y": 100}, "data": {"label": "User Input", "properties": {}}},
-            {
-                "id": "agent_1", 
-                "type": "agent", 
-                "function": "agent_node", 
-                "position": {"x": 350, "y": 100}, 
-                "data": {
-                    "label": "Year Agent", 
-                    "properties": {
-                        "system_prompt": "You are an assistant. When asked for the current year, you MUST use the 'current_year_node' tool. Do not answer from your own knowledge. Simply invoke the tool.",
-                        "tool_descriptions": {
-                            "current_year_node": "Gets the current calendar year."
-                        },
-                        "input_keys": ["user_input"]
-                    }
-                }
-            },
-            {"id": "current_year_node", "type": "current_year", "function": "current_year_node", "position": {"x": 600, "y": 200}, "data": {"label": "Current Year Tool", "properties": {}}},
-            {"id": "output_1", "type": "output", "function": "output_node", "position": {"x": 850, "y": 100}, "data": {"label": "Output", "properties": {}}}
-        ],
-        "edges": [
-            {"id": "e1", "source": "input_1", "target": "agent_1"},
-            {"id": "e2", "source": "agent_1", "target": "output_1"}
-        ],
-        "entry_point": "input_1",
-        "finish_point": "output_1",
-        "state_schema": {
-            "user_input": {"type": "string", "required": True},
-            "response": {"type": "string", "required": False},
-            "current_year": {"type": "number", "required": False}
-        },
-        "llm_config": {"provider": "GoogleGenerativeAI", "model": "gemini-2.0-flash", "api_key": "env:GOOGLE_API_KEY"}
-    }
+    # print("\n=== Test: Agent with Current Year Tool ===")
+    # current_year_flow = {
+    #     "flow_id": "test_current_year_agent_flow",
+    #     "name": "Agent with Current Year Tool Flow",
+    #     "description": "An agent that uses a tool to find the current year.",
+    #     "nodes": [
+    #         {"id": "input_1", "type": "input", "function": "input_node", "position": {"x": 100, "y": 100}, "data": {"label": "User Input", "properties": {}}},
+    #         {
+    #             "id": "agent_1", 
+    #             "type": "agent", 
+    #             "function": "agent_node", 
+    #             "position": {"x": 350, "y": 100}, 
+    #             "data": {
+    #                 "label": "Year Agent", 
+    #                 "properties": {
+    #                     "system_prompt": "You are an assistant. When asked for the current year, you MUST use the 'current_year_node' tool. Do not answer from your own knowledge. Simply invoke the tool.",
+    #                     "tool_descriptions": {
+    #                         "current_year_node": "Gets the current calendar year."
+    #                     },
+    #                     "input_keys": ["user_input"],
+    #                     "model": "gemini-2.0-flash",
+    #                     "temperature": 0.7,
+    #                     "max_tokens": 1000
+    #                 }
+    #             }
+    #         },
+    #         {"id": "current_year_node", "type": "current_year", "function": "current_year_node", "position": {"x": 600, "y": 200}, "data": {"label": "Current Year Tool", "properties": {}}},
+    #         {"id": "output_1", "type": "output", "function": "output_node", "position": {"x": 850, "y": 100}, "data": {"label": "Output", "properties": {}}}
+    #     ],
+    #     "edges": [
+    #         {"id": "e1", "source": "input_1", "target": "agent_1"},
+    #         {"id": "e2", "source": "agent_1", "target": "output_1"}
+    #     ],
+    #     "entry_point": "input_1",
+    #     "finish_point": "output_1",
+    #     "state_schema": {
+    #         "user_input": {"type": "string", "required": True},
+    #         "response": {"type": "string", "required": False},
+    #         "current_year": {"type": "number", "required": False}
+    #     },
+    #     "llm_config": {
+    #         "provider": "GoogleGenerativeAI",
+    #         "model": "gemini-2.0-flash",
+    #         "api_key": "env:GOOGLE_API_KEY",
+    #         "temperature": 0.7,
+    #         "max_tokens": 1000
+    #     }
+    # }
     
-    resp = requests.post(f"{BASE_URL}/api/flows", json=current_year_flow)
-    print(f"Create Agent with Current Year Tool Flow status: {resp.status_code}")
-    if resp.status_code != 200:
-        print(f"❌ Failed to create flow: {resp.text}")
+    # resp = requests.post(f"{BASE_URL}/api/flows", json=current_year_flow)
+    # print(f"Create Agent with Current Year Tool Flow status: {resp.status_code}")
+    # if resp.status_code != 200:
+    #     print(f"❌ Failed to create flow: {resp.text}")
 
-    # Test query for the current year
-    year_query = {"initial_state": {"user_input": "What is the current year?"}}
-    resp = requests.post(f"{BASE_URL}/api/flows/test_current_year_agent_flow/execute", json=year_query)
-    print(f"Current year query status: {resp.status_code}")
-    print(f"Current year query response: {resp.json()}")
-    if resp.status_code != 200:
-        print(f"❌ Failed to execute query: {resp.text}")
+    # # Test query for the current year
+    # year_query = {"initial_state": {"user_input": "What is the current year?"}}
+    # resp = requests.post(f"{BASE_URL}/api/flows/test_current_year_agent_flow/execute", json=year_query)
+    # print(f"Current year query status: {resp.status_code}")
+    # print(f"Current year query response: {resp.json()}")
+    # if resp.status_code != 200:
+    #     print(f"❌ Failed to execute query: {resp.text}")
 
-    current_year = datetime.datetime.now().year
-    response_data = resp.json()
-    result_text = response_data.get("result", {}).get("response", "")
-    if str(current_year) not in result_text:
-        print(f"⚠️ Warning: Current year ({current_year}) not found in response: {result_text}")   
+    # current_year = datetime.datetime.now().year
+    # response_data = resp.json()
+    # result_text = response_data.get("result", {}).get("response", "")
+    # if str(current_year) not in result_text:
+    #     print(f"⚠️ Warning: Current year ({current_year}) not found in response: {result_text}")   
+
+# def test_agent_current_year_tool():
+#     import datetime
+#     BASE_URL = "http://localhost:8000"
+#     flow_json = {
+#         "flow_id": "test_current_year_agent_flow",
+#         "name": "Agent with Current Year Tool Flow",
+#         "description": "An agent that uses a tool to find the current year.",
+#         "nodes": [
+#             {
+#                 "id": "input_1",
+#                 "type": "input",
+#                 "function": "input_node",
+#                 "position": {"x": 100, "y": 100},
+#                 "data": {"label": "User Input", "properties": {}}
+#             },
+#             {
+#                 "id": "agent_1",
+#                 "type": "agent",
+#                 "function": "agent_node",
+#                 "position": {"x": 350, "y": 100},
+#                 "data": {
+#                     "label": "Year Agent",
+#                     "properties": {
+#                         "system_prompt": "You are an assistant. When asked for the current year, you MUST use the 'current_year_node' tool. Do not answer from your own knowledge. Simply invoke the tool.",
+#                         "tool_descriptions": {
+#                             "current_year_node": "Gets the current calendar year."
+#                         },
+#                         "input_keys": ["user_input"],
+#                         "model": "gemini-2.0-flash",
+#                         "temperature": 0.7,
+#                         "max_tokens": 1000
+#                     }
+#                 }
+#             },
+#             {
+#                 "id": "current_year_node",
+#                 "type": "current_year",
+#                 "function": "current_year_node",
+#                 "position": {"x": 600, "y": 200},
+#                 "data": {"label": "Current Year Tool", "properties": {}}
+#             },
+#             {
+#                 "id": "output_1",
+#                 "type": "output",
+#                 "function": "output_node",
+#                 "position": {"x": 850, "y": 100},
+#                 "data": {"label": "Output", "properties": {}}
+#             }
+#         ],
+#         "edges": [
+#             {"id": "e1", "source": "input_1", "target": "agent_1"},
+#             {"id": "e2", "source": "agent_1", "target": "output_1"}
+#         ],
+#         "entry_point": "input_1",
+#         "finish_point": "output_1",
+#         "state_schema": {
+#             "user_input": {"type": "string", "required": True},
+#             "response": {"type": "string", "required": False},
+#             "current_year": {"type": "number", "required": False}
+#         },
+#         "llm_config": {
+#             "provider": "GoogleGenerativeAI",
+#             "model": "gemini-2.0-flash",
+#             "api_key": "env:GOOGLE_API_KEY",
+#             "temperature": 0.7,
+#             "max_tokens": 1000
+#         }
+#     }
+#     print(f"Create Agent with Current Year Tool Flow status: {requests.post(f'{BASE_URL}/api/flows', json=flow_json).status_code}")
+#     resp = requests.post(f"{BASE_URL}/api/flows", json=flow_json)
+#     if resp.status_code != 200:
+#         print(f"❌ Failed to create flow: {resp.text}")
+
+#     # 2. Execute the flow
+#     payload = {"initial_state": {"user_input": "What is the current year?"}}
+#     resp = requests.post(f"{BASE_URL}/api/flows/test_current_year_agent_flow/execute", json=payload)
+#     print(f"Execute Agent with Current Year Tool Flow status: {resp.status_code}")
+#     if resp.status_code != 200:
+#         print(f"❌ Failed to execute flow: {resp.text}")
+#     result = resp.json().get("result", {})
+
+#     # 3. Validate the result
+#     current_year = datetime.datetime.now().year
+#     if str(current_year) not in result.get("response", ""):
+#         print(f"❌ Current year not found in response: {result.get('response', '')}")
+#     if result.get("current_year") != current_year:
+#         print(f"❌ Current year key missing or incorrect: {result.get('current_year')}")
+#     print("✅ Agent tool-calling test passed!")
 
 if __name__ == "__main__":
     try:
         test_api()
+        # test_agent_current_year_tool()
     except requests.exceptions.ConnectionError:
         print("❌ Could not connect to API server. Make sure it's running on port 8000")

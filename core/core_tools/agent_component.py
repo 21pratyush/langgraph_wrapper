@@ -2,12 +2,19 @@ from core.core_tools.custom_component import CustomComponent
 from langchain_core.messages import HumanMessage, SystemMessage
 import json
 import pprint
-    
+from core.utils.llm_factory import get_llm
+from langsmith import traceable
+
 class AgentComponent(CustomComponent):
-    def __init__(self, llm, config=None, tools=None):
+    def __init__(self, config=None, tools=None):
+        llm = get_llm(config) if config and config.get("model") else None
         super().__init__(llm=llm, config=config, tools=tools)
 
+    @traceable(run_type="tool", name="agent_node")
     def __call__(self, state: dict) -> dict:
+        if not self.llm:
+            return {**state, "agent_output": "Agent Error: LLM not configured or initialized."}
+
         input_keys = self.config.get("input_keys") if self.config else None
         input_value = None
         if input_keys:
@@ -27,13 +34,20 @@ class AgentComponent(CustomComponent):
                         input_value = v
                         break
         if input_value is None:
-            return {**state, "response": "No input for agent."}
+            return {**state, "agent_output": "No input for agent."}
 
         # Tools are now resolved at runtime using the flow_nodes map
         tool_descriptions = self.config.get("tool_descriptions", {})
         tool_names = list(tool_descriptions.keys())
         
         system_prompt = self.config.get("system_prompt", "")
+        try:
+            # Allow the prompt to be formatted with the current state
+            system_prompt = system_prompt.format(**state)
+        except KeyError:
+            # If a key in the prompt is not in the state, use the original prompt.
+            # This allows for optional context.
+            pass
         
         # If tools are specified, let the LLM decide which one to use
         if tool_names:
@@ -84,11 +98,11 @@ class AgentComponent(CustomComponent):
                 tool_result = tool_fn(tool_state)
                 
                 # Compose the manager's response with the tool's output
-                response = f"Tool '{tool_to_call}' was used. Tool response: {tool_result.get('response', tool_result)}"
-                return {**state, "response": response}
+                response = f"Tool '{tool_to_call}' was used. Tool response: {tool_result.get('agent_output', tool_result)}"
+                return {**state, "agent_output": response}
             else:
                 # If no tool is chosen or it's invalid, return the direct LLM response
-                return {**state, "response": getattr(llm_response, "content", str(llm_response))}
+                return {**state, "agent_output": getattr(llm_response, "content", str(llm_response))}
         else:
             # No tools defined, so just run a normal LLM prompt
             messages = [
@@ -113,4 +127,4 @@ class AgentComponent(CustomComponent):
                         if "max_tokens" in self.config:
                             llm_kwargs["max_tokens"] = self.config["max_tokens"]
                 response = self.llm.invoke(messages, **llm_kwargs)
-            return {**state, "response": getattr(response, "content", str(response))}
+            return {**state, "agent_output": getattr(response, "content", str(response))}

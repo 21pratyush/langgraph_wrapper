@@ -91,12 +91,12 @@ async def get_component_definitions():
     """Get all available component definitions for the frontend"""
     return component_definitions
 
-@app.get("/api/components/{component_type}")
-async def get_component_definition(component_type: str):
-    """Get specific component definition"""
-    if component_type not in component_definitions.get("component_definitions", {}):
-        raise HTTPException(status_code=404, detail="Component not found")
-    return component_definitions["component_definitions"][component_type]
+# @app.get("/api/components/{component_type}")
+# async def get_component_definition(component_type: str):
+#     """Get specific component definition"""
+#     if component_type not in component_definitions.get("component_definitions", {}):
+#         raise HTTPException(status_code=404, detail="Component not found")
+#     return component_definitions["component_definitions"][component_type]
 
 @app.get("/api/categories")
 async def get_categories():
@@ -235,8 +235,7 @@ def validate_flow(flow: FlowDefinition) -> Dict[str, Any]:
 async def execute_langgraph_flow(flow_def: Dict[str, Any], initial_state: Dict[str, Any]) -> Dict[str, Any]:
     """Execute the flow using LangGraph (real execution)"""
     langgraph_format = convert_to_langgraph_format(flow_def)
-    llm = get_llm(langgraph_format["llm"])
-    workflow = build_graph_from_json(langgraph_format, llm=llm)
+    workflow = build_graph_from_json(langgraph_format)
     app = workflow.compile()
     print(f"Executing flow with initial state: {initial_state}")
     result = app.invoke(initial_state)
@@ -271,7 +270,7 @@ def convert_to_langgraph_format(flow_def: Dict[str, Any]) -> Dict[str, Any]:
         "entry_point": flow_def["entry_point"],
         "finish_point": flow_def["finish_point"],
         "state_schema": flow_def["state_schema"],
-        "llm": flow_def["llm_config"]
+        "llm": flow_def.get("llm_config", {})
     }
 
 if __name__ == "__main__":
